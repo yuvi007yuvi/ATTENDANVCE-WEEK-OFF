@@ -281,9 +281,13 @@
                     <th>Name</th>
                     <th>Department</th>
                     <th>Designation</th>
+                    <th>Reporting Head</th>
+                    <th>Zone/Ward</th>
+                    <th>Contact</th>
                     <th>Shift</th>
                     <th>Status</th>
                     <th>Week-Off Day</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="employee-list">
@@ -301,6 +305,57 @@
     </div>
 
     <script>
+        // Modal functionality
+        const modal = document.getElementById('employeeModal');
+        const span = document.getElementsByClassName('close')[0];
+        const modalContent = document.getElementById('modalContent');
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function showEmployeeDetails(employee) {
+            const details = [
+                ['Employee ID', employee.employee_id],
+                ['First Name', employee.first_name],
+                ['Last Name', employee.last_name],
+                ['Father Name', employee.father_name],
+                ['Email', employee.email],
+                ['Phone Number', employee.phone_number],
+                ['Aadhar Number', employee.aadhar_number],
+                ['Address', employee.address],
+                ['Zone', employee.zone],
+                ['Ward', employee.ward],
+                ['Department', employee.department],
+                ['Designation', employee.designation],
+                ['Reporting Head', employee.reporting_head],
+                ['Shift', employee.shift],
+                ['Birth Date', employee.birth_date],
+                ['Hire Date', employee.hire_date],
+                ['Created On', employee.created_on],
+                ['Registered By', employee.registered_by],
+                ['Status', employee.status],
+                ['Week-Off Day', employee.weekOffDay]
+            ];
+
+            modalContent.innerHTML = details
+                .map(([label, value]) => `
+                    <div class="detail-item">
+                        <div class="detail-label">${label}</div>
+                        <div>${value || '-'}</div>
+                    </div>
+                `)
+                .join('');
+
+            modal.style.display = 'block';
+        }
+
         // Sample employee data (in a real app, this would come from your database)
         const employees = [
             // Sample data - in reality, you would parse your CSV here
@@ -373,9 +428,21 @@
                                         employee_id: row[0].trim(),
                                         first_name: row[1].trim(),
                                         last_name: row[2].trim(),
-                                        department: row[3].trim(),
-                                        designation: row[4].trim(),
-                                        shift: row[5] ? row[5].trim() : '',
+                                        father_name: row[3].trim(),
+                                        email: row[4].trim(),
+                                        phone_number: row[5].trim(),
+                                        aadhar_number: row[6].trim(),
+                                        address: row[7].trim(),
+                                        zone: row[8].trim(),
+                                        ward: row[9].trim(),
+                                        department: row[10].trim(),
+                                        designation: row[11].trim(),
+                                        reporting_head: row[12].trim(),
+                                        shift: row[13] ? row[13].trim() : '',
+                                        birth_date: row[14].trim(),
+                                        hire_date: row[15].trim(),
+                                        created_on: row[16].trim(),
+                                        registered_by: row[17].trim(),
                                         status: 'Working',
                                         weekOffDay: ''
                                     });
@@ -401,15 +468,28 @@
 
             // Export functionality
             function exportToCSV(employees, filename) {
-                const headers = ['Employee ID', 'Name', 'Department', 'Designation', 'Shift', 'Status', 'Week-Off Day'];
+                const headers = ['Employee ID', 'First Name', 'Last Name', 'Father Name', 'Email', 'Phone Number', 'Aadhar Number', 'Address', 'Zone', 'Ward', 'Department', 'Designation', 'Reporting Head', 'Shift', 'Birth Date', 'Hire Date', 'Created On', 'Registered By', 'Status', 'Week-Off Day'];
                 const csvRows = [
                     headers.join(','),
                     ...employees.map(emp => [
                         emp.employee_id,
-                        `${emp.first_name} ${emp.last_name}`,
+                        emp.first_name,
+                        emp.last_name,
+                        emp.father_name,
+                        emp.email,
+                        emp.phone_number,
+                        emp.aadhar_number,
+                        emp.address,
+                        emp.zone,
+                        emp.ward,
                         emp.department,
                         emp.designation,
+                        emp.reporting_head,
                         emp.shift,
+                        emp.birth_date,
+                        emp.hire_date,
+                        emp.created_on,
+                        emp.registered_by,
                         emp.status,
                         emp.weekOffDay
                     ].join(','))
@@ -578,14 +658,20 @@
             } else {
                 paginatedData.forEach(employee => {
                     const row = document.createElement('tr');
+                    row.className = 'employee-row';
+                    row.onclick = () => showEmployeeDetails(employee);
                     row.innerHTML = `
                         <td>${employee.employee_id}</td>
                         <td>${employee.first_name} ${employee.last_name}</td>
                         <td>${employee.department}</td>
                         <td>${employee.designation}</td>
+                        <td>${employee.reporting_head || '-'}</td>
+                        <td>${employee.zone || '-'}/${employee.ward || '-'}</td>
+                        <td><div title="${employee.email || ''}">${employee.phone_number || '-'}</div></td>
                         <td>${employee.shift || '-'}</td>
                         <td class="${employee.status === 'Week-Off' ? 'week-off' : 'present'}">${employee.status}</td>
                         <td>${employee.weekOffDay || '-'}</td>
+                        <td><button onclick="assignWeekOff('${employee.employee_id}')">Assign Week-Off</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
